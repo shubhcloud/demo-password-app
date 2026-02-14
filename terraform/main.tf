@@ -33,11 +33,3 @@ module "aks" {
   subnet-id = module.vnet.subnet-id
   acr-id = module.acr.acr-id
 }
-
-module "entraid" {
-  source = "./entraid"
-  rg_name = module.resource-group.rgname
-  aks-name = module.aks.aks-name
-  repo-name = var.repo-name
-  acr_name = module.acr.acr-name
-}
