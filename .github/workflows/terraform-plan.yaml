@@ -3,6 +3,8 @@ name: Terraform Plan
 on:
   push:
     branches: ["terraform-update"]
+    paths:
+      - terraform/**
 
 permissions:
   contents: read
