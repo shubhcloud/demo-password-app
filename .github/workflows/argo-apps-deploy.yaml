@@ -1,0 +1,49 @@
+name: ArgoCD Applications Deploy
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "argocd/**"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-apps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Azure OIDC Login
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Install kubectl
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      # Install kubelogin (AAD clusters)
+      - name: Setup kubelogin
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: "0.0.26"
+
+      # Get AKS context
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
+
+      # Apply ArgoCD Applications only
+      - name: Deploy ArgoCD Applications
+        run: |
+          kubectl apply -f argocd/
