@@ -1,0 +1,47 @@
+name: ArgoCD Bootstrap
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/argo-bootstrap.yaml"
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    bootstrap:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@v6
+
+            - name: Azure Login
+              uses: azure/login@v2
+              with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Setup kubelogin (for AKS AAD)
+              uses: azure/use-kubelogin@v1
+              with:
+               kubelogin-version: 'latest' # adjust if needed
+
+            - name: Set AKS context
+              uses: azure/aks-set-context@v3
+              with:
+               resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+               cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
+            
+            - name: Install kubectl
+              uses: azure/setup-kubectl@v3 
+
+            - name: Install Argocd 
+              run: |
+                kubectl create namespace argocd
+                kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+                timeout 30 watch -n 1 kubectl get all -n argocd
+                kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+
