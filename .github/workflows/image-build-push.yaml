@@ -10,6 +10,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  security-events: write
 
 env:
   ACR_NAME: passwordapp
@@ -40,11 +41,37 @@ jobs:
         id: image
         run: echo "TAG=${GITHUB_SHA::5}" >> $GITHUB_ENV
 
-      - name: Build and push image
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          file: docker/Dockerfile
+          push: false
+          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
+     
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.34.0
+        with:
+          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+       # Upload SARIF to GitHub Security
+      - name: Upload Trivy SARIF
+        if: ${{ always() }}   # upload even if scan failed
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+
+      # Push only if scan passed
+      - name: Push image
+        if: ${{ success() }}
         uses: docker/build-push-action@v6
         with:
           context: app
           file: docker/Dockerfile
           push: true
           tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
-
