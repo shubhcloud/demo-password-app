@@ -1,0 +1,25 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: passwordapp-user
+  namespace: passwordapp
+rules:
+- apiGroups: ""
+  resources: ["pods", "deployments", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "create"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: passwordapp-binding
+  namespace: passwordapp
+subjects:
+- kind: User
+  name: dev-user@tenant.onmicrosoft.com
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: passwordapp-user
+  apiGroup: rbac.authorization.k8s.io
