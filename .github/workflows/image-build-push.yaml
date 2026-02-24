@@ -6,6 +6,7 @@ on:
     paths:
       - "app/**"
       - "docker/Dockerfile"
+      - ".github/workflows/image-build-push.yaml"
 
 permissions:
   id-token: write
