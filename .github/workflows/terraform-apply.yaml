@@ -5,13 +5,25 @@ on:
     branches: ["main"]
     paths:
       - terraform/**
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose Terraform action"
+        type: choice
+        required: true
+        options:
+          - apply
+          - destroy
+      destroy_confirm:
+        description: "Type DESTROY to confirm destroy"
+        required: false
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  terraform-apply:
+  terraform:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,6 +41,22 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -input=false
+        working-directory: terraform
 
+# ---------------- APPLY ----------------
       - name: Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform apply -auto-approve -input=false
+        working-directory: terraform
+
+# ---------------- DESTROY ----------------
+      - name: Terraform Destroy
+        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.destroy_confirm == 'DESTROY' }}
+        run: terraform destroy -auto-approve -input=false
+        working-directory: terraform
+
+      - name: Destroy blocked
+        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.destroy_confirm != 'DESTROY' }}
+        run: |
+          echo "Destroy blocked: type DESTROY to confirm"
+          exit 1
