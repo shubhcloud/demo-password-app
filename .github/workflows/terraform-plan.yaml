@@ -5,6 +5,7 @@ on:
     branches: ["terraform-update"]
     paths:
       - terraform/**
+      - ".github/workflows/terarform-plan.yaml"
 
 permissions:
   contents: read
