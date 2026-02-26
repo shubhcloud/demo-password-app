@@ -29,17 +29,12 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -input=false
+        working-directory: terraform
 
       - name: Terraform Format & Validate
         run: terraform fmt -check && terraform validate || true
+        working-directory: terraform
 
-      - name: Terraform Plan (save plan)
-        run: |
-          terraform plan -out=tfplan -input=false
-          terraform show -no-color tfplan > plan.txt
-
-      - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan
-          path: plan.txt
+      - name: Terraform Plan
+        run: terraform plan -input=false
+        working-directory: terraform
