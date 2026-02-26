@@ -3,12 +3,6 @@ module "resource-group" {
   rg-name = var.name
   location = var.location
 }
-module "storage-account" {
-  source = "./storage-account"
-  rg-name = module.resource-group.rgname
-  sa-name = var.name
-  location = var.location
-}
 
 module "acr" {
   source = "./acr"
