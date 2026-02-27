@@ -46,12 +46,12 @@ jobs:
 
 # ---------------- APPLY ----------------
       - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.destroy_confirm == 'APPLY'}}
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.apply_confirm == 'APPLY'}}
         run: terraform apply -auto-approve -input=false
         working-directory: terraform
       
       - name: Apply blocked
-        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.destroy_confirm != 'APPLY' }}
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.apply_confirm != 'APPLY' }}
         run: |
           echo "Apply blocked: type APPLY to confirm"
           exit 1
