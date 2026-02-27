@@ -14,6 +14,9 @@ on:
         options:
           - apply
           - destroy
+      apply_confirm:
+        description: "Type APPLY to confirm apply"
+        required: false
       destroy_confirm:
         description: "Type DESTROY to confirm destroy"
         required: false
@@ -25,6 +28,8 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -45,10 +50,15 @@ jobs:
 
 # ---------------- APPLY ----------------
       - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'apply' }}
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.destroy_confirm == 'APPLY'}}
         run: terraform apply -auto-approve -input=false
         working-directory: terraform
-
+      
+      - name: Apply blocked
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.destroy_confirm != 'APPLY' }}
+        run: |
+          echo "Apply blocked: type APPLY to confirm"
+          exit 1
 # ---------------- DESTROY ----------------
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.destroy_confirm == 'DESTROY' }}
