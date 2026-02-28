@@ -25,5 +25,4 @@ module "aks" {
   location = var.location
   rg-name = module.resource-group.rgname
   subnet-id = module.vnet.subnet-id
-  acr-id = module.acr.acr-id
 }
