@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
     - name: envoy-gateway
-      namespace: envoy-system
+      namespace: envoy-gateway
   hostnames:
     - prometheus.cbc.com
   rules:

@@ -4,7 +4,7 @@ metadata:
   name: passwordapp-user
   namespace: passwordapp
 rules:
-- apiGroups: ""
+- apiGroups: [""]
   resources: ["pods", "deployments", "services", "configmaps", "secrets"]
   verbs: ["get", "list", "create"]
 
