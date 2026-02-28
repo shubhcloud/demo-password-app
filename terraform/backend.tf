@@ -4,5 +4,6 @@ terraform {
     storage_account_name = "passwordtfstate"
     container_name       = "tfstate"
     key                  = "infra.tfstate"
+    use_azuread_auth     = true #tells terraform to use oidc auth.
   }
 }
