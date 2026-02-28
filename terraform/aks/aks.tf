@@ -6,7 +6,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   default_node_pool {
     name           = "default"
-    node_count     = 1
+    node_count     = 2
     vm_size        = "Standard_DS2_v2"
     vnet_subnet_id = var.subnet-id
   }
@@ -21,11 +21,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   service_cidr   = "10.2.0.0/16"
   dns_service_ip = "10.2.0.10"
-}
-}
+ }
 
-resource "azurerm_role_assignment" "aks_acr_pull" {
-  scope                = var.acr-id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+ lifecycle {
+   ignore_changes = true
+ }
 }
