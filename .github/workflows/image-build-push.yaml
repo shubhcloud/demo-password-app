@@ -16,6 +16,7 @@ permissions:
 env:
   ACR_NAME: passwordapp
   IMAGE_NAME: passwordapp
+  TAG: ""
 
 jobs:
   docker:
@@ -48,6 +49,6 @@ jobs:
           context: app
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
+          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TAG }}
      
       
