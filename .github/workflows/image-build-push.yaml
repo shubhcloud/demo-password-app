@@ -11,7 +11,7 @@ on:
 permissions:
   id-token: write
   contents: read
-  security-events: write
+  #security-events: write
 
 env:
   ACR_NAME: passwordapp
@@ -29,9 +29,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.ACR_CLIENT_ID }}
-          tenant-id: ${{ secrets.ACR_TENANT_ID }}
-          subscription-id: ${{ secrets.ACR_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.DOCKER_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Login Docker to ACR using Azure identity
       - name: ACR Login
@@ -47,32 +47,7 @@ jobs:
         with:
           context: app
           file: docker/Dockerfile
-          push: false
-          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
-     
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.34.0
-        with:
-          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
-          format: sarif
-          output: trivy-results.sarif
-          exit-code: 1
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-       # Upload SARIF to GitHub Security
-      - name: Upload Trivy SARIF
-        if: ${{ always() }}   # upload even if scan failed
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-results.sarif
-
-      # Push only if scan passed
-      - name: Push image
-        if: ${{ success() }}
-        uses: docker/build-push-action@v6
-        with:
-          context: app
-          file: docker/Dockerfile
           push: true
           tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.TAG }}
+     
+      
