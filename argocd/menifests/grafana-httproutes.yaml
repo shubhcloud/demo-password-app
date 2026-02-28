@@ -10,6 +10,6 @@ spec:
   hostnames:
     - grafana.cbc.com
   rules:
-    backendRefs:
+  - backendRefs:
     - name: grafana
       port: 80
