@@ -24,6 +24,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
  }
 
  lifecycle {
-   ignore_changes = true
+   ignore_changes = all
  }
 }

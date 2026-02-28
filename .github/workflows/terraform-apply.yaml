@@ -1,4 +1,4 @@
-name: Terraform Apply
+name: Terraform Apply_Destroy
 
 on:
   workflow_dispatch:
@@ -8,8 +8,8 @@ on:
         type: choice
         required: true
         options:
-          - apply
-          - destroy
+          - Apply
+          - Destroy
       apply_confirm:
         description: "Type APPLY to confirm apply"
         required: false
@@ -46,23 +46,23 @@ jobs:
 
 # ---------------- APPLY ----------------
       - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.apply_confirm == 'APPLY'}}
+        if: ${{ github.event.inputs.action == 'Apply' && github.event.inputs.apply_confirm == 'APPLY'}}
         run: terraform apply -auto-approve -input=false
         working-directory: terraform
       
       - name: Apply blocked
-        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.apply_confirm != 'APPLY' }}
+        if: ${{ github.event.inputs.action == 'Apply' && github.event.inputs.apply_confirm != 'APPLY' }}
         run: |
           echo "Apply blocked: type APPLY to confirm"
           exit 1
 # ---------------- DESTROY ----------------
       - name: Terraform Destroy
-        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.destroy_confirm == 'DESTROY' }}
+        if: ${{ github.event.inputs.action == 'Destroy' && github.event.inputs.destroy_confirm == 'DESTROY' }}
         run: terraform destroy -auto-approve -input=false
         working-directory: terraform
 
       - name: Destroy blocked
-        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.destroy_confirm != 'DESTROY' }}
+        if: ${{ github.event.inputs.action == 'Destroy' && github.event.inputs.destroy_confirm != 'DESTROY' }}
         run: |
           echo "Destroy blocked: type DESTROY to confirm"
           exit 1
