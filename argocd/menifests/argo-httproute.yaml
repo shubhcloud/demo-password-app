@@ -10,7 +10,7 @@ spec:
   hostnames:
     - argocd.cbc.com
   rules:
-    backendRefs:
+  - backendRefs:
     - name: envoy-gateway
       port: 80
 
