@@ -53,19 +53,9 @@ jobs:
       # Apply ArgoCD Applications only
       - name: Deploy ArgoCD Applications
         run: |
-          kubectl apply -f argocd/applications/envoy-proxy.yaml
-          kubectl apply -f argocd/applications/grafana.yaml
-          kubectl apply -f argocd/applications/password-app.yaml
-          kubectl apply -f argocd/applications/prometheus.yaml
+          kubectl apply -f argocd/applications/
 
       # Apply Menifest only
-      - name: Deploy ArgoCD Applications
+      - name: Deploy Menifests
         run: |
-          kubectl apply -f argocd/menifests/argo-httproute.yaml
-          kubectl apply -f argocd/menifests/gateway.yaml
-          kubectl apply -f argocd/menifests/gatewayclass.yaml
-          kubectl apply -f argocd/menifests/grafana-httproutes.yaml
-          kubectl apply -f argocd/menifests/networkpolicy.yaml
-          kubectl apply -f argocd/menifests/passwordapp-httproute.yaml
-          kubectl apply -f argocd/menifests/prometheus-httproutes.yaml
-          kubectl apply -f argocd/menifests/role-rolebinding.yaml
+          kubectl apply -f argocd/menifests/
