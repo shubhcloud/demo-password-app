@@ -11,7 +11,7 @@ spec:
     - argocd.cbc.com
   rules:
     backendRefs:
-    - name: argocd-server
+    - name: envoy-gateway
       port: 80
 
 # Path Based Routing
