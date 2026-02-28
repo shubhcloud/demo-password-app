@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "argocd/**"
+      - ".github/workflows/argo-app-deploy.yaml"
 
 permissions:
   contents: read
