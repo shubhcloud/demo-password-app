@@ -50,12 +50,7 @@ jobs:
           resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
 
-      # Apply ArgoCD Applications only
+      # Apply ArgoCD Applications
       - name: Deploy ArgoCD Applications
         run: |
           kubectl apply -f argocd/applications/
-
-      # Apply Menifest only
-      - name: Deploy Menifests
-        run: |
-          kubectl apply -f argocd/menifests/
