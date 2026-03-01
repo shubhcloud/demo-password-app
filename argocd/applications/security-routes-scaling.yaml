@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: seurity-routes-scaling
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: default
+  source:
+    path: argocd/manifests
+    repoURL: https://github.com/shubhcloud/demo-password-app.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true
