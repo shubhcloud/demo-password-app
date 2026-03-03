@@ -16,8 +16,7 @@ permissions:
 env:
   ACR_NAME: passwordapp
   IMAGE_NAME: passwordapp
-  TAG: ""
-
+  
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -38,17 +37,61 @@ jobs:
       - name: ACR Login
         run: az acr login --name $ACR_NAME
 
-      # Short SHA tag (5 chars)
-      - name: Set image tag
-        id: image
-        run: echo "TAG=${GITHUB_SHA::5}" >> $GITHUB_ENV
+      # Compute Docker content hash (app + Dockerfile)
+      - name: Compute Docker context hash
+        id: dockerhash
+        run: |
+          HASH=$(git ls-files app docker | xargs sha1sum | sha1sum | cut -c1-5)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+      
+      # Check if this image already exists in ACR
+      - name: Check if tag exists in ACR
+        id: acrcheck
+        run: |
+          if az acr repository show-tags --name $ACR_NAME --repository $IMAGE_NAME \
+             --query "[?@=='${{ steps.dockerhash.outputs.hash }}']" \
+              -o tsv | grep -q .; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Build image
+      # Build & push only if new Docker content
+      - name: Build & Push image
+        if: ${{ steps.acrcheck.outputs.exists == 'false' }}
         uses: docker/build-push-action@v6
         with:
           context: app
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-     
+          tags: |
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+     # if skipped
+      - name: Image already exists
+        if: ${{ steps.acrcheck.outputs.exists == 'true' }}
+        run: echo "Docker image unchanged — build skipped"
       
+      - name: Export image metadata
+        if: always()
+        run: |
+            HASH=${{ steps.dockerhash.outputs.hash }}
+            EXISTS=${{ steps.acrcheck.outputs.exists }}
+
+            if [ "$EXISTS" = "false" ]; then
+              BUILT=true
+            else
+              BUILT=false
+            fi
+
+            echo "hash=$HASH" > image-metadata.txt
+            echo "built=$BUILT" >> image-metadata.txt
+
+      - name: Upload image metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata
+          path: image-metadata.txt

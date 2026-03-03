@@ -6,6 +6,11 @@ on:
     types: [completed]
     branches: [main]
 
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/helm-image-update.yaml"
+      
 permissions:
   contents: write
 
@@ -18,19 +23,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Download image metadata from build workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: image-metadata
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Read metadata
+        id: meta
+        run: |
+          HASH=$(grep '^hash=' image-metadata.txt | cut -d= -f2)
+          BUILT=$(grep '^built=' image-metadata.txt | cut -d= -f2)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "built=$BUILT" >> $GITHUB_OUTPUT
+
+      # Skip entire job if no new image
+      - name: Stop if no new image built
+        if: ${{ steps.meta.outputs.built == 'true' }}
+        run: |
+          echo "No new image built — skipping Helm update"
+          exit 0
+
       - name: Checkout helm-update branch
+        if: ${{ steps.meta.outputs.built == 'true' }}
         uses: actions/checkout@v6
         with:
           ref: helm-update
 
-      # Extract same short SHA used in image workflow
-      - name: Set and update image tag
+      - name: Update values.yaml with hash tag
+        if: ${{ steps.meta.outputs.built == 'true' }}
         run: |
-          echo "TAG=${{ github.event.workflow_run.head_sha }}"
-          echo "TAG=${TAG::5}" >> $GITHUB_ENV
+          TAG=${{ steps.meta.outputs.hash }}
           sed -i 's|tag: .*|tag: '"$TAG"'|g' $VALUES_FILE
 
       - name: Commit changes to helm-update branch
+        if: ${{ steps.meta.outputs.built == 'true' }}
         run: |
           git config user.name "gha-helm-iamge-update"
           git config user.email "actions@github.com"
@@ -41,6 +69,7 @@ jobs:
           git push origin helm-update
 
       - name: Create PR helm-update → main
+        if: ${{ steps.meta.outputs.built == 'true' }}
         env: 
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
