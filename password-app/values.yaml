@@ -7,7 +7,7 @@
 replicaCount: 2
 namespace: passwordapp
 namespaceLabels: 
-  pod-security.kubernetes.io/warn: restricted
+  app: passwordapp
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
@@ -43,19 +43,19 @@ podAnnotations: {}
 podLabels:
   app: passwordapp
 
-podSecurityContext: 
-  seccompProfile:
-    type: RuntimeDefault
+podSecurityContext: {}
+  # seccompProfile:
+  #   type: RuntimeDefault
   # fsGroup: 2000
 
-securityContext: 
-  capabilities:
-    drop:
-    - ALL
-  readOnlyRootFilesystem: true
-  allowPrivilegeEscalation: false
-  runAsNonRoot: true
-  runAsUser: 1000
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # allowPrivilegeEscalation: false
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
