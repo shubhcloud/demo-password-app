@@ -13,6 +13,7 @@ on:
       
 permissions:
   contents: write
+  actions: read
 
 env:
   VALUES_FILE: password-app/values.yaml
@@ -29,7 +30,9 @@ jobs:
       #   with:
       #     name: image-metadata
       #     run-id: 
-
+      - name: Checkout source
+        uses: actions/checkout@v6
+        
       - name: Download image metadata artifact
         env:
            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
