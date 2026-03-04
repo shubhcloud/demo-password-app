@@ -5,8 +5,8 @@ metadata:
   namespace: passwordapp
 rules:
 - apiGroups: [""]
-  resources: ["pods", "deployments", "services", "configmaps", "secrets"]
-  verbs: ["get", "list", "create"]
+  resources: ["pods", "deployments", "services"]
+  verbs: ["get", "list"]
 
 ---
 
@@ -17,7 +17,7 @@ metadata:
   namespace: passwordapp
 subjects:
 - kind: User
-  name: dev-user@tenant.onmicrosoft.com
+  name: cbcstudent@shubhdadhich72gmail.onmicrosoft.com
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
