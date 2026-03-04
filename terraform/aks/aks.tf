@@ -3,13 +3,20 @@ resource "azurerm_kubernetes_cluster" "aks" {
   location            = var.location
   resource_group_name = var.rg-name
   dns_prefix          = "passwordapp"
+  private_cluster_enabled = true
 
   default_node_pool {
-    name           = "default"
-    node_count     = 2
-    vm_size        = "Standard_DS2_v2"
-    vnet_subnet_id = var.subnet-id
+    name                 = "default"
+    vm_size              = "Standard_DS2_v2"
+    vnet_subnet_id       = var.subnet-id
+    auto_scaling_enabled = true
+    min_count            = 1
+    max_count            = 2
   }
+
+ azure_active_directory_role_based_access_control {
+   azure_rbac_enabled = true
+} 
 
   identity {
     type = "SystemAssigned"
