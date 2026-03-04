@@ -5,7 +5,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   location            = var.location
   resource_group_name = var.rg-name
   dns_prefix          = "passwordapp"
-  private_cluster_enabled = true
+  private_cluster_enabled = false
 
   default_node_pool {
     name                 = "default"
