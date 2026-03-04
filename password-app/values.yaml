@@ -43,7 +43,9 @@ podAnnotations: {}
 podLabels:
   app: passwordapp
 
-podSecurityContext: {}
+podSecurityContext: 
+  seccompProfile:
+    type: RuntimeDefault
   # fsGroup: 2000
 
 securityContext: 
@@ -51,6 +53,7 @@ securityContext:
     drop:
     - ALL
   readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
   runAsNonRoot: true
   runAsUser: 1000
 
