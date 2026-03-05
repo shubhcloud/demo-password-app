@@ -81,6 +81,7 @@ jobs:
       # Scan EXISTING image (ACR)
       - name: Scan existing image with Trivy
         if: steps.acrcheck.outputs.exists == 'true'
+        continue-on-error: true
         id: failimagescan
         uses: aquasecurity/trivy-action@0.34.0
         with:
@@ -92,15 +93,16 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy SARIF
-        if: steps.failimagescan.outputs.exists == 'true'
+        if: steps.acrcheck.outputs.exists == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: fail-trivy-results.sarif
+          sarif_file: existing-trivy-results.sarif
 
       # Scan NEW image    
       - name: Scan new image with Trivy
         if: steps.acrcheck.outputs.exists == 'false'
         id: passimagescan
+        continue-on-error: true
         uses: aquasecurity/trivy-action@0.34.0
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
@@ -111,14 +113,14 @@ jobs:
           ignore-unfixed: true
       
       - name: Upload Trivy SARIF
-        if: steps.passimagescan.outputs.exists == 'true'
+        if: steps.acrcheck.outputs.exists == 'false'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: pass-trivy-results.sarif
     
       # Push only if NEW + scan passed
       - name: Push image to ACR
-        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outputs.exists == 'true'
+        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
         uses: docker/build-push-action@v6
         with:
           context: app
@@ -129,7 +131,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Export image metadata
-        if: steps.passimagescan.outputs.exists == 'true'
+        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
         run: |
             HASH=${{ steps.dockerhash.outputs.hash }}
             EXISTS=${{ steps.acrcheck.outputs.exists }}
@@ -144,7 +146,7 @@ jobs:
             echo "built=$BUILT" >> image-metadata.txt
 
       - name: Upload image metadata
-        if: steps.passimagescan.outputs.exists == 'true'
+        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: image-metadata
