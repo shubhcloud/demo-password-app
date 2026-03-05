@@ -92,9 +92,10 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: table
-          exit-code: 0
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+        env:
+            TRIVY_EXIT_CODE: 0
 
       # Scan NEW image    
       - name: Scan new image with Trivy
@@ -105,9 +106,10 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: table
-          exit-code: 0
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+        env:
+          TRIVY_EXIT_CODE: 0
     
       # Push only if NEW + scan passed
       - name: Push image to ACR
