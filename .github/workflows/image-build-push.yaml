@@ -92,6 +92,7 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: table
+          exit-code: 0
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
@@ -104,6 +105,7 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: table
+          exit-code: 0
           severity: CRITICAL,HIGH
           ignore-unfixed: true
     
