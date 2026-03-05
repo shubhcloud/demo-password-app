@@ -11,7 +11,7 @@ on:
 permissions:
   id-token: write
   contents: read
-  #security-events: write
+  security-events: write
 
 env:
   ACR_NAME: passwordapp
@@ -67,7 +67,7 @@ jobs:
         with:
           context: app
           file: docker/Dockerfile
-          push: true
+          push: false
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           cache-from: type=gha
@@ -78,8 +78,33 @@ jobs:
         if: ${{ steps.acrcheck.outputs.exists == 'true' }}
         run: echo "Docker image unchanged — build skipped"
       
+      # Scan EXISTING image (ACR)
+      - name: Scan existing image with Trivy
+        if: steps.acrcheck.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@0.34.0
+        with:
+          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          
+      # Push only if NEW + scan passed
+      - name: Push image to ACR
+        if: steps.acrcheck.outputs.exists == 'false'
+        uses: docker/build-push-action@v6
+        id: imagescan
+        with:
+          context: app
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Export image metadata
-        if: always()
+        if: steps.imagescan.outputs.exists == 'true'
         run: |
             HASH=${{ steps.dockerhash.outputs.hash }}
             EXISTS=${{ steps.acrcheck.outputs.exists }}
@@ -94,7 +119,7 @@ jobs:
             echo "built=$BUILT" >> image-metadata.txt
 
       - name: Upload image metadata
-        if: always()
+        if: steps.imagescan.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: image-metadata
