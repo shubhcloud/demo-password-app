@@ -78,6 +78,10 @@ jobs:
       - name: Image already exists
         if: ${{ steps.acrcheck.outputs.exists == 'true' }}
         run: echo "Docker image unchanged — build skipped"
+
+      - name: Pull existing image
+        if: steps.acrcheck.outputs.exists == 'true'
+        run: docker pull $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ steps.dockerhash.outputs.hash }}
       
       # Scan EXISTING image (ACR)
       - name: Scan existing image with Trivy
