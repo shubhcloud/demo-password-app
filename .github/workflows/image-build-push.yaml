@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "app/**"
-      - "docker/Dockerfile"
+      - "docker/**"
       - ".github/workflows/image-build-push.yaml"
 
 permissions:
