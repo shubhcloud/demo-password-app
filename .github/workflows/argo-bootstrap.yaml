@@ -60,6 +60,6 @@ jobs:
 
                   kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.insecure":"true"}}'
                   echo "Restarting ArgoCD server..."
-                  kubectl rollout restart deployment argocd-server -n argocd --timeout=120s
+                  kubectl rollout restart deployment argocd-server -n argocd
 
 
