@@ -87,7 +87,7 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: sarif
-          output: trivy-results.sarif
+          output: existing-trivy-results.sarif
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
@@ -107,7 +107,7 @@ jobs:
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           format: sarif
-          output: trivy-results.sarif
+          output: pass-trivy-results.sarif
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
