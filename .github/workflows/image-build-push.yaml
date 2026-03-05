@@ -87,8 +87,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.34.0
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
-          format: sarif
-          output: trivy-results.sarif
+          format: table
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
@@ -101,17 +100,10 @@ jobs:
         uses: aquasecurity/trivy-action@0.34.0
         with:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
-          format: sarif
-          output: trivy-results.sarif
+          format: table
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-      
-      - name: Upload Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-results.sarif
     
       # Push only if NEW + scan passed
       - name: Push image to ACR
