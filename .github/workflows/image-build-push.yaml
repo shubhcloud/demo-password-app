@@ -83,32 +83,30 @@ jobs:
         if: steps.acrcheck.outputs.exists == 'true'
         run: docker pull $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ steps.dockerhash.outputs.hash }}
       
-      # Install Trivy
-      - name: Install Trivy
-        uses: aquasecurity/trivy-action@0.34.0
-        with:
-           scan-type: 'fs'
-           scan-ref: '.'
-           format: 'table'
-        continue-on-error: true
 
       # Scan EXISTING image (ACR)
       - name: Scan existing image with Trivy
         if: steps.acrcheck.outputs.exists == 'true'
         id: failimagescan
-        run: |
-          trivy image --format table --severity CRITICAL,HIGH --ignore-unfixed \
-            $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ steps.dockerhash.outputs.hash }} \
-            | tee trivy-existing.txt
-
+        uses: aquasecurity/trivy-action@master
+        with: 
+          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }} 
+          format: table 
+          severity: CRITICAL,HIGH 
+          ignore-unfixed: true
+          exit-code: 1
+      
       # Scan NEW image    
       - name: Scan new image with Trivy
         if: steps.acrcheck.outputs.exists == 'false'
         id: passimagescan
-        run: |
-           trivy image --format table --severity CRITICAL,HIGH --ignore-unfixed \
-           $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ steps.dockerhash.outputs.hash }} \
-           | tee trivy-new.txt
+        uses: aquasecurity/trivy-action@master
+        with: 
+          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }} 
+          format: table 
+          severity: CRITICAL,HIGH 
+          ignore-unfixed: true
+          exit-code: 1
     
       # Push only if NEW + scan passed
       - name: Push image to ACR
