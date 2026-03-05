@@ -78,18 +78,3 @@ jobs:
 
           git push origin helm-update
 
-      - name: Create PR helm-update → main
-        if: ${{ steps.meta.outputs.built == 'true' }}
-        env: 
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            if gh pr list --head helm-update --base main --json number --jq 'length' | grep -q '^0$'; then
-            gh pr create \
-              --title "Update image tag to $TAG" \
-              --body "Auto update Helm image tag to $TAG after image build." \
-              --base main \
-              --head helm-update
-            echo "PR created"
-            else
-              echo "PR already exists"
-            fi
