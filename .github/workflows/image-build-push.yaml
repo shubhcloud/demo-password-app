@@ -68,6 +68,7 @@ jobs:
           context: app
           file: docker/Dockerfile
           push: false
+          load: true
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           cache-from: type=gha
