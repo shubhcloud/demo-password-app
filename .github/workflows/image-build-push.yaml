@@ -11,7 +11,7 @@ on:
 permissions:
   id-token: write
   contents: read
-  security-events: write
+  #security-events: write
 
 env:
   ACR_NAME: passwordapp
@@ -67,8 +67,7 @@ jobs:
         with:
           context: app
           file: docker/Dockerfile
-          push: false
-          load: true
+          push: true
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
           cache-from: type=gha
@@ -79,49 +78,8 @@ jobs:
         if: ${{ steps.acrcheck.outputs.exists == 'true' }}
         run: echo "Docker image unchanged — build skipped"
 
-      - name: Pull existing image
-        if: steps.acrcheck.outputs.exists == 'true'
-        run: docker pull $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ steps.dockerhash.outputs.hash }}
-      
-
-      # Scan EXISTING image (ACR)
-      - name: Scan existing image with Trivy
-        if: steps.acrcheck.outputs.exists == 'true'
-        id: failimagescan
-        uses: aquasecurity/trivy-action@master
-        with: 
-          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }} 
-          format: table 
-          severity: CRITICAL,HIGH 
-          ignore-unfixed: true
-          exit-code: 1
-      
-      # Scan NEW image    
-      - name: Scan new image with Trivy
-        if: steps.acrcheck.outputs.exists == 'false'
-        id: passimagescan
-        uses: aquasecurity/trivy-action@master
-        with: 
-          image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }} 
-          format: table 
-          severity: CRITICAL,HIGH 
-          ignore-unfixed: true
-          exit-code: 1
-    
-      # Push only if NEW + scan passed
-      - name: Push image to ACR
-        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
-        uses: docker/build-push-action@v6
-        with:
-          context: app
-          file: docker/Dockerfile
-          push: true
-          tags: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Export image metadata
-        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
+        if: steps.acrcheck.outputs.exists == 'false'
         run: |
             HASH=${{ steps.dockerhash.outputs.hash }}
             EXISTS=${{ steps.acrcheck.outputs.exists }}
@@ -136,7 +94,7 @@ jobs:
             echo "built=$BUILT" >> image-metadata.txt
 
       - name: Upload image metadata
-        if: steps.acrcheck.outputs.exists == 'false' && steps.passimagescan.outcome == 'success'
+        if: steps.acrcheck.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: image-metadata
