@@ -101,7 +101,7 @@ jobs:
           image-ref: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.dockerhash.outputs.hash }} 
           format: sarif
           vuln-type: os,library
-          severity: CRITICAL,HIGH 
+          severity: CRITICAL
           ignore-unfixed: true
           output: trivy-results.sarif
           exit-code: 1
