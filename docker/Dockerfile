@@ -1,5 +1,5 @@
 # Use lightweight Nginx as the web server
-FROM nginx:1.23
+FROM nginx:alpine
 
 # Remove default nginx static files
 RUN rm -rf /usr/share/nginx/html/*
